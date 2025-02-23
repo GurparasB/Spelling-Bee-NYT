@@ -1,7 +1,7 @@
 import pyautogui
 import time
 import random
-
+import keyboard
 
 def spelling_bee():
     with open('words.txt', 'r') as file:
@@ -32,11 +32,14 @@ def spelling_bee():
     ]
 
     print(f'Filtered Words: {filtered_words}')
-
-    print("You have 5 seconds to focus on the textbox")
+    print("You have 5 seconds to focus on the textbox. Press '1' to stop at any time.")
+    
     time.sleep(5)
 
     for word in filtered_words:
+        if keyboard.is_pressed('1'):  # Stop if '1' is pressed
+            print("Stopping the script.")
+            break
         pyautogui.write(word)  
         pyautogui.press('enter') 
 
@@ -110,12 +113,12 @@ def wordle():
 
 def main():
     while True:
-        que = input('Enter the game name (spelling bee or wordle): ').strip().lower()
+        que = input('Enter the game name (spelling bee(1) or wordle(2)): ').strip().lower()
 
-        if que == 'spelling bee':
+        if que == 'spelling bee' or que == "1":
             spelling_bee()
             break  #
-        elif que == 'wordle':
+        elif que == 'wordle' or que == "2":
             wordle()
             break  
         else:
