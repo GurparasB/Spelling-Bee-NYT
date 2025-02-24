@@ -10,7 +10,6 @@ def spelling_bee():
     s = sorted(word.strip().lower() for word in words)
 
     main_letter_input = input('Enter main letter: ').lower()
-
     main_letter = [main_letter_input]
 
     letters = []
@@ -55,22 +54,47 @@ def wordle():
 
     def filter_words(guess, feedback, word_list):
         possible_words = []
+        excluded_letters = set()  # Letters that must not appear anywhere
+        required_letters = {}  # Letters that must appear, but in a different position
 
+        # Step 1: Identify excluded and required letters
+        for i in range(len(guess)):
+            letter = guess[i]
+            if feedback[i] == 'x':  # Gray (letter must NOT be in the word at all)
+                if letter not in required_letters:  # Only exclude if it's not yellow elsewhere
+                    excluded_letters.add(letter)
+            elif feedback[i] == 'y':  # Yellow (letter is present but in a different position)
+                required_letters.setdefault(letter, []).append(i)
+            elif feedback[i] == 'g':  # Green (letter must be in this exact position)
+                required_letters.setdefault(letter, []).append(i)
+
+        # Step 2: Filter words based on these rules
         for word in word_list:
             valid = True
             for i in range(len(guess)):
-                if feedback[i] == 'g':  
-                    if word[i] != guess[i]:
+                letter = guess[i]
+                if feedback[i] == 'g':  # Green - must be exactly here
+                    if word[i] != letter:
                         valid = False
                         break
-                elif feedback[i] == 'y':  
-                    if guess[i] not in word or word[i] == guess[i]:
+                elif feedback[i] == 'y':  # Yellow - must be present but NOT here
+                    if letter not in word or word[i] == letter:
                         valid = False
                         break
-                elif feedback[i] == 'x':  
-                    if guess[i] in word:
+                elif feedback[i] == 'x':  # Gray - must NOT be anywhere
+                    if letter in word:
                         valid = False
                         break
+        
+            # Ensure all required letters are present (from yellow/green hints)
+            for required_letter, positions in required_letters.items():
+                if required_letter not in word:
+                    valid = False
+                    break
+                if all(word[pos] == required_letter for pos in positions):  # Yellow rule violation
+                    valid = False
+                    break
+        
             if valid:
                 possible_words.append(word)
 
@@ -117,7 +141,7 @@ def main():
 
         if que == 'spelling bee' or que == "1":
             spelling_bee()
-            break  #
+            break  
         elif que == 'wordle' or que == "2":
             wordle()
             break  
